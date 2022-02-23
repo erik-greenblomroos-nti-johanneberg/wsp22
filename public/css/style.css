@@ -1,0 +1,43 @@
+
+*{
+    background-color: pink;
+}
+.bigtitle{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+}
+.title {
+    font-size: 120px;
+    color: purple;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+.smalltitle{
+    font-size: 60px;
+    color: purple;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+.login_box {
+    height: 60px;
+    width: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    background-color: purple;
+}
+.login{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+.login_button{
+    background-color: purple;
+    color: pink;
+}
+.undertitle{
+    font-size: 35px;
+}

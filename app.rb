@@ -6,5 +6,6 @@ require 'bcrypt'
 enable :sessions
 
 get('/') do 
-slim(:home)
+slim(:login)
 end
+
