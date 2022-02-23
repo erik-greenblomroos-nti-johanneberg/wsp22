@@ -9,3 +9,6 @@ get('/') do
 slim(:login)
 end
 
+get('/auction') do
+slim(:auction)
+end

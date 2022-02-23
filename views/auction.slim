@@ -4,3 +4,11 @@ div.auction_banner
     div.balance balance 
     div.burger |||
 div.auction_table
+
+ol
+  - preview.each do |NFT|
+    li 
+      a href="albums/#{album['AlbumId']}" #{NFT["Title"]}
+      a href="albums/#{album['AlbumId']}/bid" Bid 
+      a href="albums/#{album['AlbumId']}/hitory" History 
+      
