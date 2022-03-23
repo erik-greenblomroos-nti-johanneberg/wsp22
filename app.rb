@@ -22,12 +22,13 @@ get('/auction/index') do
 end
 
 
-get('/inventory/owned') do
-    db = SQLite3::Database.new("db/database.db")
+get('/inventory/:id/index') do
+    id = params[:id].to_i
+    db = SQLite3::Database.new("db/database.db") 
     db.results_as_hash = true
-    result = db.execute("SELECT * FROM NFT")
-    slim(:"inventory/owned",locals:{NFT:result}) #Byt ut till redirect('/inventory/:id/owned') för att få personligt storage
-  end
+    result = db.execute("SELECT * FROM NFT WHERE OwnerId = ?", id)
+    slim(:"inventory/index",locals:{result:result}) 
+end
 
 get('/inventory/:id/new') do
     slim(:"auction/new")

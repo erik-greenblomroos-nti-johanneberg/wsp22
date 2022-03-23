@@ -77,7 +77,11 @@
 .nft_container {
     width: 230px;
     height: 230px;
-    background: blue;
+    background: gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
 }
 .auction_interaction {
     height: 100px;
@@ -99,4 +103,9 @@
 }
 p {
     font-size: 20px;
+}
+
+.nft_owned {
+    height: auto;
+    width: 100%;
 }

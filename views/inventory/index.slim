@@ -1,0 +1,12 @@
+iv.auction_banner
+    h1.banner_title Inventory
+    div.balance balance 
+    div.burger |||
+div.auction_table
+    - result.each do |nft|
+        .auction_container
+            .nft_container
+                img.nft_owned src="/img/#{nft["URL"]}" alt="#{nft["Description"]}" /
+            .auction_interaction
+                p retrieve
+
