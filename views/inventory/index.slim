@@ -1,7 +1,8 @@
 iv.auction_banner
     h1.banner_title Inventory
-    div.balance balance 
-    div.burger |||
+    div.balance #{user_result[balance]}
+    div.burger 
+
 div.auction_table
     - result.each do |nft|
         .auction_container
