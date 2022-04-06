@@ -27,7 +27,7 @@ get('/inventory/:id/index') do
     db = SQLite3::Database.new("db/database.db") 
     db.results_as_hash = true
     result = db.execute("SELECT * FROM NFT WHERE OwnerId = ?", id)
-    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id)
+    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
     slim(:"inventory/index",locals:{result:result, user_result:user_result}) 
 end
 
