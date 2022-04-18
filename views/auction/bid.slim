@@ -1,0 +1,28 @@
+div.auction_banner
+    h1.banner_title Bid
+    div.balance  
+        p Balance: $#{user_result["Balance"]}
+    div.burger 
+.bid_table 
+     .bid_container
+                img.nft_owned src="/img/#{nft["URL"]}" alt="#{nft["Description"]}" /
+                .bid_interaction
+                    .bid_display
+                        p Current price: $#{nft["Currentvalue"]}
+                        //Behöver generellt price
+                    .bid_display
+                        p Sold by: #{nft["OwnerId"]}
+                    .bid_display
+                        p 2h left
+                        //Behöver generellt
+                    .bid_display
+                    
+                        .tiny_display 
+                            p Bid 
+                            // POST sak här
+                        .tiny_display  
+                            p Hist  
+                            // ny sida här för historia eller evntuallet javascript
+                    form action="/auction/#{user_result['id']}/#{nft['id']}/bid" method="post"
+                    input type="text" name="bid" placeholder="Min bid: $#{nft["Currentvalue"]}"
+                    input type="submit" value="Bid" 

@@ -109,3 +109,33 @@ p {
     height: auto;
     width: 100%;
 }
+
+.bid_interaction {
+    height: 200px;
+    width: auto;
+    background-color: rgb(193, 163, 168);
+    display: flex;
+    flex-wrap: wrap;
+}
+.bid_container {
+    width: 300px;
+    height: 400px;
+    background: gray;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+.bid_display{
+    height: 50px;
+    width: 150px;
+    display: flex;
+}
+.bid_table{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: red;
+    height: 487px;
+}

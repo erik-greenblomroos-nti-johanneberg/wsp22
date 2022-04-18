@@ -18,9 +18,28 @@ get('/auction') do
     redirect('/auction/index')
 end
 get('/auction/index') do
-    slim(:"auction/index")
+
+    db = SQLite3::Database.new("db/database.db") 
+    db.results_as_hash = true
+    result = db.execute("SELECT * FROM NFT")
+    slim(:"auction/index", locals:{result:result})
 end
 
+post('/auction/:nft_id/bid') do
+    
+    redirect('/auction/:nft_id/1/bid') 
+    # Behöver använda session för att spara user_id i en key tex: session[:user_id]
+end
+
+get('/auction/:id/:nft_id/bid') do
+    id = params[:id].to_i
+    nft_id = params[:nft_id].to_i
+    db = SQLite3::Database.new("db/database.db") 
+    db.results_as_hash = true
+    result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
+    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
+    slim(:"auction/bid", locals:{nft:result, user_result:user_result})
+end
 
 get('/inventory/:id/index') do
     id = params[:id].to_i
