@@ -6,33 +6,37 @@ require 'bcrypt'
 enable :sessions
 
 get('/') do 
+session[:user_id] = "1"
+slim(:home)
+end
+
+get('/login') do
 slim(:login)
 end
 
-get('/auction') do
-    # db = SQLite3::Database.new("db/database.db")
-    # db.results_as_hash = true
-    # result = db.execute("SELECT * FROM NFT")
-    # p result
-    # slim(:"auction/index",locals:{NFT:result})
-    redirect('/auction/index')
+get('/register') do
+slim(:register)
 end
-get('/auction/index') do
 
+
+# get('/auction') do
+#     # db = SQLite3::Database.new("db/database.db")
+#     # db.results_as_hash = true
+#     # result = db.execute("SELECT * FROM NFT")
+#     # p result
+#     # slim(:"auction/index",locals:{NFT:result})
+#     redirect('/auction/index')
+# end
+get('/auction') do
     db = SQLite3::Database.new("db/database.db") 
     db.results_as_hash = true
-    result = db.execute("SELECT * FROM NFT")
+    result = db.execute("SELECT * FROM NFT WHERE Status = ?", "active")
     slim(:"auction/index", locals:{result:result})
 end
 
-post('/auction/:nft_id/bid') do
-    
-    redirect('/auction/:nft_id/1/bid') 
-    # Behöver använda session för att spara user_id i en key tex: session[:user_id]
-end
 
-get('/auction/:id/:nft_id/bid') do
-    id = params[:id].to_i
+get('/auction/:nft_id/bid') do
+    id = session[:user_id]
     nft_id = params[:nft_id].to_i
     db = SQLite3::Database.new("db/database.db") 
     db.results_as_hash = true
@@ -45,7 +49,7 @@ get('/inventory/:id/index') do
     id = params[:id].to_i
     db = SQLite3::Database.new("db/database.db") 
     db.results_as_hash = true
-    result = db.execute("SELECT * FROM NFT WHERE OwnerId = ?", id)
+    result = db.execute("SELECT * FROM NFT WHERE OwnerId = ? AND Status = ?", id, "inactive")
     user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
     slim(:"inventory/index",locals:{result:result, user_result:user_result}) 
 end
@@ -60,5 +64,21 @@ post('/inventory/:id/new') do
     redirect('/auction')
 end
 
+get('/leaderboard') do
+    slim(:"leaderboard/index")
+end
+
+post('/auction/:id/:nft_id/bid') do
+    id = session[:user_id]
+    nft_id = params[:nft_id].to_i
+    db = SQLite3::Database.new("db/database.db") 
+    db.results_as_hash = true
+
+    # result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
+    # user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
+
+
+    redirect('/auction')
+end
 
 
