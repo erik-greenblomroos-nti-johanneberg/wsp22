@@ -11,15 +11,15 @@ div.auction_table
                 img.nft_owned src="/img/#{nft["URL"]}" alt="#{nft["Description"]}" /
             .auction_interaction
                 .small_display
-                    p $400
+                    p $ #{nft["Startprice"]}
                 .small_display
                     p By: Owenter
                 .small_display
                     p 2h left
                 .small_display
                     .tiny_display 
-                    a href="/auction/#{nft["Id"]}/bid" 
-                        div Bid
+                    form action="/auction/#{nft["Id"]}/bid" method="POST"
+                        input type="submit" value="Bid" 
                     .tiny_display  
                         p Hist  
 

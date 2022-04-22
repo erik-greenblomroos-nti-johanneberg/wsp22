@@ -8,10 +8,10 @@ div.auction_banner
                 img.nft_owned src="/img/#{nft["URL"]}" alt="#{nft["Description"]}" /
                 .bid_interaction
                     .bid_display
-                        p Current price: $#{nft["Currentvalue"]}
+                        p Current price: $#{nft["Startprice"]}
                         //Behöver generellt price
                     .bid_display
-                        p Sold by: #{nft["OwnerId"]}
+                        p Sold by: #{user_result["Name"]}
                     .bid_display
                         p 2h left
                         //Behöver generellt
@@ -23,6 +23,6 @@ div.auction_banner
                         .tiny_display  
                             p Hist  
                             // ny sida här för historia eller evntuallet javascript
-                    form action="/auction/#{user_result['id']}/#{nft['id']}/bid" method="post"
-                    input type="text" name="bid" placeholder="Min bid: $#{nft["Currentvalue"]}"
-                    input type="submit" value="Bid" 
+                    form action="/auction/#{user_result['Id']}/#{nft['Id']}/bid" method="post"
+                        input type="number" name="bid" placeholder="Min bid: $#{nft["Startvalue"]}"
+                        input type="submit" value="Bid" 

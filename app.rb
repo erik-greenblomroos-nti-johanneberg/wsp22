@@ -2,6 +2,7 @@ require 'sinatra'
 require 'slim'
 require 'sqlite3'
 require 'bcrypt'
+require_relative 'model.rb'
 
 enable :sessions
 
@@ -28,18 +29,17 @@ end
 #     redirect('/auction/index')
 # end
 get('/auction') do
-    db = SQLite3::Database.new("db/database.db") 
-    db.results_as_hash = true
+    db = connect_db
     result = db.execute("SELECT * FROM NFT WHERE Status = ?", "active")
+    bid_results = db.execute("SELECT * FROM Bid")
     slim(:"auction/index", locals:{result:result})
 end
 
 
-get('/auction/:nft_id/bid') do
+get('/auction/bid') do
     id = session[:user_id]
     nft_id = params[:nft_id].to_i
-    db = SQLite3::Database.new("db/database.db") 
-    db.results_as_hash = true
+    db = connect_db
     result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
     user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
     slim(:"auction/bid", locals:{nft:result, user_result:user_result})
@@ -47,8 +47,7 @@ end
 
 get('/inventory/:id/index') do
     id = params[:id].to_i
-    db = SQLite3::Database.new("db/database.db") 
-    db.results_as_hash = true
+    db = connect_db
     result = db.execute("SELECT * FROM NFT WHERE OwnerId = ? AND Status = ?", id, "inactive")
     user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
     slim(:"inventory/index",locals:{result:result, user_result:user_result}) 
@@ -59,7 +58,7 @@ get('/inventory/:id/new') do
 end
 post('/inventory/:id/new') do
     user_id = params[:id].to_i
-    db = SQLite3::Database.new("db/database.db")
+    db = connect_db
     db.execute("INSERT INTO NFT (OwnerId, CreatorId, Name, Token, ) VALUES (?,?)", user_id, user_id, name, token)
     redirect('/auction')
 end
@@ -68,16 +67,18 @@ get('/leaderboard') do
     slim(:"leaderboard/index")
 end
 
+post('/auction/:nft_id/bid') do 
+    nft_id = params[:nft_id]
+    redirect('/auction/bid')
+end
+
+
 post('/auction/:id/:nft_id/bid') do
     id = session[:user_id]
     nft_id = params[:nft_id].to_i
-    db = SQLite3::Database.new("db/database.db") 
-    db.results_as_hash = true
-
-    # result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
-    # user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
-
-
+    bid_amount = params[:bid]
+    db = connect_db
+    user_bid(id, nft_id, bid_amount)
     redirect('/auction')
 end
 
