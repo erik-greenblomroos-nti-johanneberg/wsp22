@@ -1,0 +1,19 @@
+div.auction_banner
+    h1.banner_title Sell
+    div.balance  
+        p Balance: $#{user_result["Balance"]}
+    div.burger 
+.bid_table 
+     .bid_container
+                img.nft_owned src="/img/#{nft["URL"]}" alt="#{nft["Description"]}" /
+                .bid_interaction
+                    .bid_name
+                        p #{nft["Name"]}
+                    form action="/auction/#{user_result['Id']}/#{nft['Id']}/bid" method="post"
+                        input type="number" name="bid" placeholder="Enter Startprice"
+                        input type="number" name="deadline" placeholder="Select days until deadline"
+                        inpyt type="number" name="increment" 
+                           option value="0" 
+                           option value="10"
+                           option value="50"
+                        input type="submit" value="Bid" 

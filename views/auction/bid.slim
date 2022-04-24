@@ -7,6 +7,8 @@ div.auction_banner
      .bid_container
                 img.nft_owned src="/img/#{nft["URL"]}" alt="#{nft["Description"]}" /
                 .bid_interaction
+                    .bid_name
+                        p #{nft["Name"]}
                     .bid_display
                         p Current price: $#{nft["Startprice"]}
                         //Behöver generellt price
@@ -18,10 +20,9 @@ div.auction_banner
                     .bid_display
                     
                         .tiny_display 
-                            p Bid 
+                            p Hist  
                             // POST sak här
                         .tiny_display  
-                            p Hist  
                             // ny sida här för historia eller evntuallet javascript
                     form action="/auction/#{user_result['Id']}/#{nft['Id']}/bid" method="post"
                         input type="number" name="bid" placeholder="Min bid: $#{nft["Startvalue"]}"

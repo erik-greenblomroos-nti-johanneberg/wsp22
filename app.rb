@@ -19,15 +19,6 @@ get('/register') do
 slim(:register)
 end
 
-
-# get('/auction') do
-#     # db = SQLite3::Database.new("db/database.db")
-#     # db.results_as_hash = true
-#     # result = db.execute("SELECT * FROM NFT")
-#     # p result
-#     # slim(:"auction/index",locals:{NFT:result})
-#     redirect('/auction/index')
-# end
 get('/auction') do
     db = connect_db
     result = db.execute("SELECT * FROM NFT WHERE Status = ?", "active")
@@ -71,15 +62,29 @@ post('/auction/:nft_id/bid') do
     nft_id = params[:nft_id]
     redirect('/auction/bid')
 end
-
-
 post('/auction/:id/:nft_id/bid') do
     id = session[:user_id]
     nft_id = params[:nft_id].to_i
     bid_amount = params[:bid]
-    db = connect_db
     user_bid(id, nft_id, bid_amount)
     redirect('/auction')
+end
+get('/inventory/sell') do
+    id = session[:user_id]
+    nft_id = params[:nft_id].to_i
+    db = connect_db
+    result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
+    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
+    p result
+    p user_result
+
+
+    slim(:"inventory/sell",locals:{nft:result, user_result:user_result})
+end
+post('/inventory/:id/:nft_id/sell') do
+    id = session[:user_id]
+    nft_id = params[:nft_id].to_i
+    redirect('/inventory/sell')
 end
 
 

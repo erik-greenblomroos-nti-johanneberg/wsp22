@@ -119,7 +119,7 @@ p {
 }
 .bid_container {
     width: 300px;
-    height: 400px;
+    height: 460px;
     background: gray;
     display: flex;
     flex-direction: column;
@@ -138,4 +138,14 @@ p {
     align-items: center;
     background: red;
     height: 487px;
+}
+.bid_name{
+    width: 100%;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.bid_name p{
+    font-size: 40px;
 }

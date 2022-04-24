@@ -11,5 +11,6 @@ div.auction_table
             .nft_container
                 img.nft_owned src="/img/#{nft["URL"]}" alt="#{nft["Description"]}" /
             .auction_interaction
-                p retrieve
+                form action="/inventory/:id/#{nft["Id"]}/sell" method="POST"
+                    input type="submit" value="Sell" 
 
