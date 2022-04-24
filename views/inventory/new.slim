@@ -1,4 +1,10 @@
-form action="/auction/#{result['Id']}/new" method="post"
+form action="/inventory/new" method="post"
+    h3 NFT name:
     input type="text" name="name" placeholder="NFT name" 
+    h3 Image file:
+    input type="file" name="URL" accept="image/*"
+    h3 Description
+    input type="text" name="description" 
+    h3 Token
     input type="text" name="token" placeholder="NFT token"
     input type="submit" value="Add" 

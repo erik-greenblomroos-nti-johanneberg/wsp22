@@ -1,9 +1,11 @@
 div.auction_banner
     h1.banner_title Inventory
-    div.balance  
-        p Balance:
-        p $#{user_result["Balance"]}
-    div.burger 
+    a href="/inventory" inventory 
+    a href="/auction" auction 
+    a href="/inventory/new" New 
+    form action="/logout" method="POST"
+        input type="submit" value="Logout"
+    div.balance Current Balance: $#{user_result["Balance"]} 
 
 div.auction_table
     - result.each do |nft|
@@ -11,6 +13,11 @@ div.auction_table
             .nft_container
                 img.nft_owned src="/img/#{nft["URL"]}" alt="#{nft["Description"]}" /
             .auction_interaction
-                form action="/inventory/:id/#{nft["Id"]}/sell" method="POST"
-                    input type="submit" value="Sell" 
+                .long_display
+                    p #{nft["Name"]}
+                .long_display 
+                    p.desc #{nft["Description"]}
+                .long_display
+                    a href="/inventory/sell/#{nft["Id"]}" Sell
+
 

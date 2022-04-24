@@ -1,29 +1,161 @@
+module Model
 
-def connect_db
-    db = SQLite3::Database.new("db/database.db") 
-    db.results_as_hash = true
-    return db
-end
-
-def user_bid(user_id, nft_id, bid_amount)
-    db = connect_db
-    bid_amount = bid_amount.to_i
-    # Kan implementera så att man även måste betala en minimum increment
-    min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
-    current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
-    owner = db.execute("SELECT OwnerId FROM NFT WHERE Id = ?", nft_id).first["OwnerId"]
-    if bid_amount > min_bid && user_id.to_i != current_lead
-        if user_id.to_i != owner 
-        current_time = Time.now.to_s
-        db.execute("INSERT INTO Bid (Bidamount, Bidtime, Userid, NFTid) VALUES(?,?,?,?)",bid_amount, current_time,user_id,nft_id)
-        db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?",bid_amount, nft_id)
-        else
-            # ERROR -
-            "You can't bid at your own NFT"
+    # Kopplar till databasen och returnerar db
+    def connect_db
+        db = SQLite3::Database.new("db/database.db") 
+        db.results_as_hash = true
+        return db
+    end
+    # Kollar ifall en nft redan finns i auktionen, returnerar false eller true
+    def is_in_auction(nft_id)
+        db = connect_db
+        status = db.execute("SELECT Status FROM NFT WHERE Id = ?", nft_id).first["Status"]      
+            if status == "inactive"
+                return false
+            else
+                return true
+            end
         end
-    else
-        # ERROR - Budet är för lågt
-        "Your bid was too low"
+
+    # Ändrar User's Balance och genom att subtrahera deras bidamount
+    def take_money(user_id, bidamount)
+    db = connect_db
+    balance = db.execute("SELECT Balance FROM User WHERE Id = ?", user_id.to_i).first["Balance"]
+    new_balance = balance.to_i - bidamount.to_i
+    db.execute("UPDATE User SET Balance = ? WHERE Id = ?", new_balance, user_id.to_i)
+    end
+    # Ändrar User's Balance och genom att adderas deras tidigare bidamount
+    def give_money(user_id, bidamount)
+        db = connect_db
+        balance = db.execute("SELECT Balance FROM User WHERE Id = ?", user_id.to_i).first["Balance"]
+        new_balance = balance.to_i + bidamount.to_i
+        db.execute("UPDATE User SET Balance = ? WHERE Id = ?", new_balance, user_id.to_i)
+    end
+    # Skapar ett Bid för en NFT
+    # Kollar ifall nft är "active" om inte, error
+    # Kollar ifall user's balance är högre eller lika med detas bid, annars error
+    # Kollar ifall users's bid är högre än tidigare bid:et
+    # Kollar ifall user äger NFT'n , annars Error
+    # Kollar ifall user redan har högsta bid'et, annars error
+    #
+    def user_bid(user_id, nft_id, bid_amount)
+        db = connect_db
+        if is_in_auction(nft_id) == true
+        bid_amount = bid_amount.to_i
+        min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
+        current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
+        owner = db.execute("SELECT OwnerId FROM NFT WHERE Id = ?", nft_id).first["OwnerId"]
+        balance = db.execute("SELECT Balance FROM User WHERE Id = ?", user_id.to_i).first["Balance"]
+            if bid_amount <= balance
+                if bid_amount > min_bid 
+                    if user_id.to_i != owner
+                        if current_lead == nil
+                            current_time = Time.now.to_s
+                            db.execute("INSERT INTO Bid (Bidamount, Bidtime, Userid, NFTid) VALUES(?,?,?,?)",bid_amount, current_time,user_id,nft_id)
+                            db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?",bid_amount, nft_id)
+                            take_money(user_id, bid_amount)
+                        else
+                            current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
+                            if user_id.to_i != current_lead
+                                current_time = Time.now.to_s
+                                give_money(current_lead, min_bid)
+                                db.execute("INSERT INTO Bid (Bidamount, Bidtime, Userid, NFTid) VALUES(?,?,?,?)",bid_amount, current_time,user_id,nft_id)
+                                db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?",bid_amount, nft_id)
+                                take_money(user_id, bid_amount)
+                            else
+                                #ERROR
+                                p "You cant bid if you already have the highest bid"
+                            end
+                        end
+
+                    else
+                        # ERROR -
+                        p "You can't bid at your own NFT"
+                    end
+                else
+                    # ERROR
+                    p "Your bid was too low"
+                end
+            else
+                #ERROR
+            p  "Your balance is too low"
+            end
+        else 
+        #ERROR
+        p "NFT isn't in an auction"
+        end
+
     end
 
+
+    # def create_deadline(deadline)
+    #     current_time = Time.now
+    # end
+
+
+    #hinner inte mer
+    def user_sell(user_id, nft_id, startprice, deadline, increment)
+    db = connect_db
+    user_id = session[:user_id].to_i
+    status = db.execute("SELECT Status FROM NFT WHERE Id = ?", nft_id).first["Status"]
+    owner = db.execute("SELECT OwnerId FROM NFT WHERE Id = ?", nft_id).first["OwnerId"]
+    p startprice
+    if status == "inactive"
+        if user_id == owner
+            db.execute("UPDATE NFT SET Startprice = ?, Increment = ?, Status = ?, Deadline = ? WHERE Id =?", startprice.to_i, increment, "active", deadline, nft_id)
+        else
+            #ERROR
+            "You do now own this property"
+        end
+    else
+        #ERROR
+        "This NFT is already in auction"
+    end
+    end
+
+    def remove_bids(nft_id)
+
+    end
+
+    def add_nft(name, url, token, user_id, description)
+        db = connect_db
+        db.execute("INSERT INTO NFT (OwnerId, CreatorId, Name, Status, Token, Description, Currentvalue, URL) VALUES(?,?,?,?,?,?,?,?)",user_id, user_id,name,"inactive",token,description,0,url)
+    end
+
+    def register(user,pwd,conf_pwd, mail)
+    db = connect_db
+    result = db.execute("SELECT Id FROM User WHERE Name=?", user)
+    if result.empty?
+        if pwd == conf_pwd
+            pwd_digest = BCrypt::Password.create(pwd)
+            db.execute("INSERT INTO User(Name, Password, Mail, Status, Role, Balance) VALUES(?,?,?,?,?,?)",user, pwd_digest, mail,"active", 0, 0)
+            user_id = db.execute("SELECT Id FROM User WHERE Name=?", user)
+            session[:user_id] = user_id
+        else
+            #ERROR
+            "The passwords do not match"
+        end
+    else
+        redirect('/login')
+        "There is already a user named that"
+    end
+    end
+
+    def login(user, pwd)
+    db = connect_db
+    result = db.execute("SELECT Id,Password FROM User WHERE Name=?", user)
+        if result.empty?
+            #ERROR
+            "Wrong password or username"
+        end
+    user_id = result.first["Id"]
+    pwd_digest = result.first["Password"]
+        if BCrypt::Password.new(pwd_digest) == pwd
+                session[:user_id] = user_id
+                redirect('/auction')
+        else
+                #ERROR
+                "Wrong password or username"
+        end
+    end
 end

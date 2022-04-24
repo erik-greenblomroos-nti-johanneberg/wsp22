@@ -1,8 +1,11 @@
 div.auction_banner
-    h1.banner_title Auction House 
-    div.sell_button Sell 
-    div.balance balance 
-    div.burger |||
+    h1.banner_title Auction House
+    a href="/inventory" inventory 
+    a href="/auction" auction 
+    form action="/logout" method="POST"
+        input type="submit" value="Logout"
+    div.balance Current Balance: $#{user_result["Balance"]} 
+
 div.auction_table
 
     - result.each do |nft|
@@ -15,11 +18,10 @@ div.auction_table
                 .small_display
                     p #{nft["Name"]}
                 .small_display
-                    p 2h left
+                    p #{nft["Deadline"]} Days left
                 .small_display
                     .tiny_display 
-                    form action="/auction/#{nft["Id"]}/bid" method="POST"
-                        input type="submit" value="Bid" 
+                    a href="/auction/bid/#{nft["Id"]}" Bid
                     .tiny_display  
                         p Hist  
 

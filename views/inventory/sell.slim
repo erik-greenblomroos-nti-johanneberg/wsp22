@@ -8,12 +8,19 @@ div.auction_banner
                 img.nft_owned src="/img/#{nft["URL"]}" alt="#{nft["Description"]}" /
                 .bid_interaction
                     .bid_name
-                        p #{nft["Name"]}
-                    form action="/auction/#{user_result['Id']}/#{nft['Id']}/bid" method="post"
-                        input type="number" name="bid" placeholder="Enter Startprice"
-                        input type="number" name="deadline" placeholder="Select days until deadline"
-                        inpyt type="number" name="increment" 
-                           option value="0" 
-                           option value="10"
-                           option value="50"
-                        input type="submit" value="Bid" 
+                        p #{nft["Name"]} 
+                    form action="/inventory/#{user_result['Id']}/#{nft['Id']}/sell" method="POST"
+                        input type="number" name="startprice" placeholder="Enter Startprice"
+                        Label for="deadline" 
+                            p Choose days for auction
+                        select name="deadline" 
+                            option value="1" 1 Day
+                            option value="2" 2 Days
+                            option value="3" 3 Days
+                        Label for="increment"
+                            p Select minimum increment
+                        select name="increment" 
+                           option value="0"$0
+                           option value="10"$10
+                           option value="50"$50
+                        input type="submit" value="Sell" 
