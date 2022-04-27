@@ -64,25 +64,28 @@ module Model
                                 take_money(user_id, bid_amount)
                             else
                                 #ERROR
-                                p "You cant bid if you already have the highest bid"
+                                redirect('/error/You_cant_bid_if_you_already_have_the_highest_bid')
                             end
-                        end
 
+                        end
+                        new_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
+                        latest_bid = db.execute("SELECT Id FROM Bid WHERE UserId = ?", new_lead).last["Id"]
+                        db.execute("INSERT INTO user_bid_relation (UserId, BidId) VALUES(?,?)",new_lead, latest_bid)
                     else
                         # ERROR -
-                        p "You can't bid at your own NFT"
+                        redirect('/error/You_cant_bid_at_your_own_NFT')
                     end
                 else
                     # ERROR
-                    p "Your bid was too low"
+                    redirect('/error/Your_bid_was_too_low')
                 end
             else
                 #ERROR
-            p  "Your balance is too low"
+                redirect('/error/Your_balance_is_too_low')
             end
         else 
         #ERROR
-        p "NFT isn't in an auction"
+        redirect('/error/NFT_isnt_in_an_auction')
         end
 
     end
@@ -105,11 +108,12 @@ module Model
             db.execute("UPDATE NFT SET Startprice = ?, Increment = ?, Status = ?, Deadline = ? WHERE Id =?", startprice.to_i, increment, "active", deadline, nft_id)
         else
             #ERROR
-            "You do now own this property"
+            redirect('/error/You_do_now_own_this_property')
+           
         end
     else
         #ERROR
-        "This NFT is already in auction"
+        redirect('/error/This_NFT_is_already_in_auction')
     end
     end
 
@@ -133,11 +137,11 @@ module Model
             session[:user_id] = user_id
         else
             #ERROR
-            "The passwords do not match"
+            redirect('/error/The_passwords_do_not_match')
         end
     else
         redirect('/login')
-        "There is already a user named that"
+        redirect('/error/There_is_already_a_user_named_that')
     end
     end
 
@@ -146,7 +150,7 @@ module Model
     result = db.execute("SELECT Id,Password FROM User WHERE Name=?", user)
         if result.empty?
             #ERROR
-            "Wrong password or username"
+            redirect('/error/Wrong_password_or_username')
         end
     user_id = result.first["Id"]
     pwd_digest = result.first["Password"]
@@ -154,8 +158,27 @@ module Model
                 session[:user_id] = user_id
                 redirect('/auction')
         else
-                #ERROR
-                "Wrong password or username"
+            #ERROR
+            redirect('/error/Wrong_password_or_username')
         end
     end
 end
+
+def delete_relation(nft_id)
+
+    
+end
+
+def deactivate_nft(nft_id)
+db = connect_db
+#deavitvate
+db.execute("UPDATE NFT SET Status = ? WHERE Id = ?","inactive", nft_id )
+current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
+if current_lead != nil
+    current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
+    min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
+    give_money(current_lead, min_bid)
+end
+#delete_relation(nft_id)
+end
+

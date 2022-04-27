@@ -20,11 +20,11 @@ before('/auction') do
         redirect('/')
     end
 end
-#Landingpage
+#Display Landingpage
 get('/') do 
 slim(:home)
 end
-#Loginpage
+#Display Loginpage
 get('/login') do
 slim(:login)
 end
@@ -108,13 +108,18 @@ get('/inventory/sell/:nft_id') do
     user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
     slim(:"inventory/sell",locals:{nft:result, user_result:user_result})
     else
+        redirect('/error/NFT_is_already_in_auction')
     #ERROR
-    "NFT is already in auction"
     end
 end
 # Display Inventory/new
 get('/inventory/new') do
     slim(:"inventory/new")
+end
+
+get('/error/:error_msg') do
+    error_message = params[:error_msg].split("_").join(" ")
+    slim(:"/error", locals:{error_message:error_message})
 end
 
 # Skapar ett nytt bid och redirectar till '/auktion'
@@ -183,7 +188,7 @@ pwd = params["pwd"]
 conf_pwd = params["conf_pwd"]
 mail = params["mail"]
 register(user,pwd,conf_pwd,mail)
-redirect('/auction')
+redirect('/login')
 end
 
 # Ändrar Session[:user_id] till nil och redirecter till '/'
@@ -191,4 +196,11 @@ end
 post("/logout") do
 session[:user_id] = nil
 redirect('/')
+end
+
+post("/auction/remove/:nft_id")
+#måste ha admin behörighet
+nft_id = params[:nft_id]
+deactivate_nft(nft_id)
+
 end
