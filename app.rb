@@ -198,9 +198,9 @@ session[:user_id] = nil
 redirect('/')
 end
 
-post("/auction/remove/:nft_id")
+post("/auction/:nft_id/delete") do
 #måste ha admin behörighet
 nft_id = params[:nft_id]
 deactivate_nft(nft_id)
-
+redirect('/auction')
 end

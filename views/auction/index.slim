@@ -21,9 +21,11 @@ div.auction_table
                     p #{nft["Deadline"]} Days left
                 .small_display
                     .tiny_display 
-                    a href="/auction/bid/#{nft["Id"]}" Bid
+                        a href="/auction/bid/#{nft["Id"]}" Bid
                     .tiny_display  
-                        p Hist  
+                         - if session[:role] == 1
+                                form action="/auction/#{nft['Id']}/delete" method="post"
+                                    input type="submit" value="Remove"   
 
 /  .auction_container
 /     .nft_container

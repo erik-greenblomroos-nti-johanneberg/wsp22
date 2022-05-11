@@ -155,6 +155,7 @@ module Model
     user_id = result.first["Id"]
     pwd_digest = result.first["Password"]
         if BCrypt::Password.new(pwd_digest) == pwd
+                session[:role] = db.execute("SELECT Role FROM User WHERE Id = ?", user_id).first["Role"]
                 session[:user_id] = user_id
                 redirect('/auction')
         else
@@ -165,8 +166,17 @@ module Model
 end
 
 def delete_relation(nft_id)
+    db = connect_db
+    db.results_as_hash = false
+    bidlist = db.execute("SELECT Id FROM Bid WHERE NFTid = ?", nft_id).to_a
+    i = 0
+    p bidlist
+    p bidlist.length
+    while i < bidlist[0].length
+        db.execute("DELETE user_bid_relation WHERE BidId = ?", bidlist[i][0])
+        i += 1
+    end
 
-    
 end
 
 def deactivate_nft(nft_id)
@@ -179,6 +189,6 @@ if current_lead != nil
     min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
     give_money(current_lead, min_bid)
 end
-#delete_relation(nft_id)
+delete_relation(nft_id)
 end
 
