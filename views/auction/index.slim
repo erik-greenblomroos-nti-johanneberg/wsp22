@@ -5,6 +5,8 @@ div.auction_banner
     form action="/logout" method="POST"
         input type="submit" value="Logout"
     div.balance Current Balance: $#{user_result["Balance"]} 
+    - if session[:role] == 1
+      p ADMIN
 
 div.auction_table
 

@@ -170,13 +170,12 @@ def delete_relation(nft_id)
     db.results_as_hash = false
     bidlist = db.execute("SELECT Id FROM Bid WHERE NFTid = ?", nft_id).to_a
     i = 0
-    p bidlist
-    p bidlist.length
-    while i < bidlist[0].length
-        db.execute("DELETE user_bid_relation WHERE BidId = ?", bidlist[i][0])
-        i += 1
+    while i < bidlist.length
+        num = bidlist[i][0]
+        db.execute("DELETE FROM user_bid_relation WHERE BidId = ?", num)
+        i = i + 1
     end
-
+    db.execute("DELETE FROM Bid WHERE NFTid = ?", nft_id)
 end
 
 def deactivate_nft(nft_id)
@@ -192,3 +191,33 @@ end
 delete_relation(nft_id)
 end
 
+def remove(nft_id)
+    db = connect_db
+    deactivate_nft(nft_id)
+    current_value = db.execute("SELECT Currentvalue FROM NFT WHERE Id = ?", nft_id).first["Currentvalue"]
+    p current_value
+    db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?", current_value, nft_id)
+
+end
+
+def get_nft(nft_id) 
+    db = connect_db
+    result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
+    return result
+end
+def get_user(id)
+    db = connect_db
+    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
+    return user_result
+end
+
+def get_inactive_nft(id)
+    db = connect_db
+    result = db.execute("SELECT * FROM NFT WHERE OwnerId = ? AND Status = ?", id, "inactive")
+    return result
+end
+def get_active_nft()
+    db = connect_db
+    result = db.execute("SELECT * FROM NFT WHERE Status = ?", "active")
+    return result
+end

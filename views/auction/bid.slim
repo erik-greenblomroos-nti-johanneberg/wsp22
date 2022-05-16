@@ -25,6 +25,6 @@ div.auction_banner
                             // POST sak här
                         .tiny_display  
                             // ny sida här för historia eller evntuallet javascript
-                    form action="/auction/#{user_result['Id']}/#{nft['Id']}/bid" method="post"
+                    form action="/auction/#{nft['Id']}" method="post"
                         input type="number" name="bid" placeholder="Min bid: $#{nft["Startvalue"]}"
                         input type="submit" value="Bid" 

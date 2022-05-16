@@ -41,10 +41,9 @@ end
 
 get('/auction') do
     db = connect_db
-    result = db.execute("SELECT * FROM NFT WHERE Status = ?", "active")
-    bid_results = db.execute("SELECT * FROM Bid")
     id = session[:user_id]
-    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
+    result = get_active_nft()
+    user_result = get_user(id)
     slim(:"auction/index", locals:{result:result, user_result:user_result})
 end
 
@@ -58,8 +57,8 @@ get('/auction/bid/:nft_id') do
     id = session[:user_id]
     nft_id = params[:nft_id].to_i
     db = connect_db
-    result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
-    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
+    result = get_nft(nft_id)
+    user_result = get_user(id)
     slim(:"auction/bid", locals:{nft:result, user_result:user_result})
 end
 
@@ -71,25 +70,14 @@ end
 get('/inventory') do
     id = session[:user_id].to_i
     db = connect_db
-    result = db.execute("SELECT * FROM NFT WHERE OwnerId = ? AND Status = ?", id, "inactive")
-    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
+    result = get_inactive_nft(id)
+    user_result = get_user(id)
     slim(:"inventory/index",locals:{result:result, user_result:user_result}) 
 end
 
-# Display Inventorypage
+# Display Inventory/new page
 get('/inventory/new') do
     slim(:"inventory/new")
-end
-
-# Params[String] to integer, användarens id
-# Kopplar till databasen
-# Lägger till ny NFT ägaren tilldelas till användarens id
-#
-post('/inventory/:id/new') do
-    user_id = params[:id].to_i
-    db = connect_db
-    db.execute("INSERT INTO NFT (OwnerId, CreatorId, Name, Token, ) VALUES (?,?)", user_id, user_id, name, token)
-    redirect('/auction')
 end
 
 # get('/leaderboard') do
@@ -103,18 +91,13 @@ get('/inventory/sell/:nft_id') do
     id = session[:user_id]
     nft_id = params[:nft_id].to_i
     if is_in_auction(nft_id) == false 
-    db = connect_db
-    result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
-    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
+    result = get_nft(nft_id)
+    user_result = get_user(id)
     slim(:"inventory/sell",locals:{nft:result, user_result:user_result})
     else
         redirect('/error/NFT_is_already_in_auction')
     #ERROR
     end
-end
-# Display Inventory/new
-get('/inventory/new') do
-    slim(:"inventory/new")
 end
 
 get('/error/:error_msg') do
@@ -122,11 +105,11 @@ get('/error/:error_msg') do
     slim(:"/error", locals:{error_message:error_message})
 end
 
-# Skapar ett nytt bid och redirectar till '/auktion'
+# Skapar ett nytt bid och redirectar till '/auction'
 # Session[integer] Id
 # Params[String] to integer, NFT_Id
 # Params[Integer], Bidamount
-post('/auction/:id/:nft_id/bid') do
+post('/auction/:nft_id') do
     id = session[:user_id]
     nft_id = params[:nft_id].to_i
     bid_amount = params[:bid]
@@ -140,7 +123,7 @@ end
 # Params[Integer], startprice
 # Params[Integer], deadline
 # Params[Integer], increment
-post('/inventory/:id/:nft_id/sell') do 
+post('/inventory/:nft_id/update') do 
     id = session[:user_id]
     nft_id = params[:nft_id].to_i
     startprice = params[:startprice]
@@ -159,7 +142,7 @@ end
 # Params[String], token
 # Params[String], description
 
-post ('/inventory/new') do
+post ('/inventory') do
 user_id = session[:user_id]
 name = params[:name]
 url = params[:URL]
@@ -201,6 +184,6 @@ end
 post("/auction/:nft_id/delete") do
 #måste ha admin behörighet
 nft_id = params[:nft_id]
-deactivate_nft(nft_id)
+remove(nft_id)
 redirect('/auction')
 end
