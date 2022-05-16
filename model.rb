@@ -67,10 +67,8 @@ module Model
                                 take_money(user_id, bid_amount)
                             else
                                 #ERROR
-                                
                                 redirect('/error/You_cant_bid_if_you_already_have_the_highest_bid')
                             end
-
                         end
                         new_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
                         latest_bid = db.execute("SELECT Id FROM Bid WHERE UserId = ?", new_lead).last["Id"]
@@ -130,6 +128,17 @@ module Model
         db.execute("INSERT INTO NFT (OwnerId, CreatorId, Name, Status, Token, Description, Currentvalue, URL) VALUES(?,?,?,?,?,?,?,?)",user_id, user_id,name,"inactive",token,description,0,url)
     end
 
+    def user_exists(user)
+        db = connect_db
+        result = db.execute("SELECT Id FROM User WHERE Name=?", user)
+        if result.empty?
+            return false
+        else
+            return true
+        end
+    end
+
+
     def register(user,pwd,conf_pwd, mail)
     db = connect_db
     result = db.execute("SELECT Id FROM User WHERE Name=?", user)
@@ -138,90 +147,109 @@ module Model
             pwd_digest = BCrypt::Password.create(pwd)
             db.execute("INSERT INTO User(Name, Password, Mail, Status, Role, Balance) VALUES(?,?,?,?,?,?)",user, pwd_digest, mail,"active", 0, 0)
             user_id = db.execute("SELECT Id FROM User WHERE Name=?", user)
-            session[:user_id] = user_id
         else
             #ERROR
-            redirect('/error/The_passwords_do_not_match')
         end
     else
-        redirect('/login')
-        redirect('/error/There_is_already_a_user_named_that')
+        #ERROR
     end
+    end
+
+    def get_userid(user)
+        db = connect_db
+        result = db.execute("SELECT Id FROM User WHERE Name=?", user).first["Id"]
+        return result
+    end
+
+    def check_user(user)
+        db = connect_db
+        result = db.execute("SELECT Id,Password FROM User WHERE Name=?", user)
+        return result
+    end
+
+    def pwd_match(user, pwd)
+        db = connect_db
+        pwd_digest = db.execute("SELECT Password FROM User WHERE Name=?", user).first["Password"]
+        if BCrypt::Password.new(pwd_digest) == pwd
+            return true
+        else
+            return false
+        end
+    end
+
+    def get_role(user)
+        db = connect_db
+        role = db.execute("SELECT Role FROM User WHERE Name=?", user).first["Role"]
+        return role
     end
 
     def login(user, pwd)
     db = connect_db
     result = db.execute("SELECT Id,Password FROM User WHERE Name=?", user)
-        if result.empty?
-            #ERROR
-            redirect('/error/Wrong_password_or_username')
-        end
     user_id = result.first["Id"]
     pwd_digest = result.first["Password"]
         if BCrypt::Password.new(pwd_digest) == pwd
-                session[:role] = db.execute("SELECT Role FROM User WHERE Id = ?", user_id).first["Role"]
-                session[:user_id] = user_id
-                redirect('/auction')
+            return true
         else
             #ERROR
-            redirect('/error/Wrong_password_or_username')
         end
     end
-end
 
-def delete_relation(nft_id)
-    db = connect_db
-    db.results_as_hash = false
-    bidlist = db.execute("SELECT Id FROM Bid WHERE NFTid = ?", nft_id).to_a
-    i = 0
-    while i < bidlist.length
-        num = bidlist[i][0]
-        db.execute("DELETE FROM user_bid_relation WHERE BidId = ?", num)
-        i = i + 1
+
+    def delete_relation(nft_id)
+        db = connect_db
+        db.results_as_hash = false
+        bidlist = db.execute("SELECT Id FROM Bid WHERE NFTid = ?", nft_id).to_a
+        i = 0
+        while i < bidlist.length
+            num = bidlist[i][0]
+            db.execute("DELETE FROM user_bid_relation WHERE BidId = ?", num)
+            i = i + 1
+        end
+        db.execute("DELETE FROM Bid WHERE NFTid = ?", nft_id)
     end
-    db.execute("DELETE FROM Bid WHERE NFTid = ?", nft_id)
-end
 
-def deactivate_nft(nft_id)
-db = connect_db
-#deavitvate
-db.execute("UPDATE NFT SET Status = ? WHERE Id = ?","inactive", nft_id )
-current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
-if current_lead != nil
-    current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
-    min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
-    give_money(current_lead, min_bid)
-end
-delete_relation(nft_id)
-end
+    def deactivate_nft(nft_id)
+    db = connect_db
+    #deavitvate
+    db.execute("UPDATE NFT SET Status = ? WHERE Id = ?","inactive", nft_id )
+    current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
+    if current_lead != nil
+        current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
+        min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
+        give_money(current_lead, min_bid)
+    end
+    delete_relation(nft_id)
+    end
 
-def remove(nft_id)
-    db = connect_db
-    deactivate_nft(nft_id)
-    current_value = db.execute("SELECT Currentvalue FROM NFT WHERE Id = ?", nft_id).first["Currentvalue"]
-    p current_value
-    db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?", current_value, nft_id)
+    def remove(nft_id)
+        db = connect_db
+        deactivate_nft(nft_id)
+        current_value = db.execute("SELECT Currentvalue FROM NFT WHERE Id = ?", nft_id).first["Currentvalue"]
+        p current_value
+        db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?", current_value, nft_id)
 
-end
+    end
 
-def get_nft(nft_id) 
-    db = connect_db
-    result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
-    return result
-end
-def get_user(id)
-    db = connect_db
-    user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
-    return user_result
-end
+    def get_nft(nft_id) 
+        db = connect_db
+        result = db.execute("SELECT * FROM NFT WHERE Id = ?", nft_id).first
+        return result
+    end
+    def get_user(id)
+        db = connect_db
+        user_result = db.execute("SELECT * FROM User WHERE Id = ?", id).first
+        return user_result
+    end
 
-def get_inactive_nft(id)
-    db = connect_db
-    result = db.execute("SELECT * FROM NFT WHERE OwnerId = ? AND Status = ?", id, "inactive")
-    return result
-end
-def get_active_nft()
-    db = connect_db
-    result = db.execute("SELECT * FROM NFT WHERE Status = ?", "active")
-    return result
+    def get_inactive_nft(id)
+        db = connect_db
+        result = db.execute("SELECT * FROM NFT WHERE OwnerId = ? AND Status = ?", id, "inactive")
+        return result
+    end
+    def get_active_nft()
+        db = connect_db
+        result = db.execute("SELECT * FROM NFT WHERE Status = ?", "active")
+        return result
+    end
 end

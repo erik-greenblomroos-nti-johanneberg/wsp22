@@ -198,7 +198,22 @@ post('/login') do
 session[:logging] = Time.now
 user = params[:user]
 pwd = params[:pwd]
-login(user, pwd)
+if check_user(user).empty?
+    redirect('/error/Wrong_password_or_username')   
+end
+if pwd_match(user, pwd) == false
+    redirect('/error/Wrong_password_or_username')
+end
+if login(user, pwd)
+    user_id = get_userid(user)
+    session[:user_id] = user_id
+    role = get_role(user)
+    session[:role] = role
+    redirect('/auction')
+else
+    redirect('/error/Wrong_password_or_username')
+end
+
 end
 
 # Skickar iväga data till hjälpdunktionen register() och redirecatar till '/auction'
@@ -211,7 +226,15 @@ user = params["user"]
 pwd = params["pwd"]
 conf_pwd = params["conf_pwd"]
 mail = params["mail"]
+if user_exists(user)
+    redirect('/error/There_is_already_a_user_named_that')
+end
+if pwd != conf_pwd
+    redirect('/error/The_passwords_do_not_match')
+end
 register(user,pwd,conf_pwd,mail)
+user_id = get_userid(user)
+session[:user_id] = user_id
 redirect('/login')
 end
 
