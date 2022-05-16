@@ -44,7 +44,9 @@ module Model
         bid_amount = bid_amount.to_i
         min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
         current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
+        p "lead #{current_lead}"
         owner = db.execute("SELECT OwnerId FROM NFT WHERE Id = ?", nft_id).first["OwnerId"]
+        #Kan lägga till så att owner och min_bid hämtas samtidigt
         balance = db.execute("SELECT Balance FROM User WHERE Id = ?", user_id.to_i).first["Balance"]
             if bid_amount <= balance
                 if bid_amount > min_bid 
@@ -56,6 +58,7 @@ module Model
                             take_money(user_id, bid_amount)
                         else
                             current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
+                            p "lead2 #{current_lead}"
                             if user_id.to_i != current_lead
                                 current_time = Time.now.to_s
                                 give_money(current_lead, min_bid)
@@ -64,6 +67,7 @@ module Model
                                 take_money(user_id, bid_amount)
                             else
                                 #ERROR
+                                
                                 redirect('/error/You_cant_bid_if_you_already_have_the_highest_bid')
                             end
 

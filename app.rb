@@ -20,6 +20,44 @@ before('/auction') do
         redirect('/')
     end
 end
+
+#Kollar ifall användaren är inloggad
+before('/inventory/sell/:nft_id') do
+    if session[:user_id] == nil
+        redirect('/')
+    end
+end
+
+#Kollar ifall användaren är inloggad
+before('/inventory/new') do
+    if session[:user_id] == nil
+        redirect('/')
+    end
+end
+
+#Kollar ifall användaren är inloggad
+before('/inventory/:nft_id/delete') do
+    if session[:user_id] == nil
+        redirect('/')
+    end
+end
+
+#Kollar ifall användaren är inloggad
+before('/auction/bid/:nft_id') do
+    if session[:user_id] == nil
+        redirect('/')
+    end
+end
+
+before ('/login') do
+    # username = params[:username]
+    if session[:logging] != nil
+        if Time.now - session[:logging] < 5
+            redirect('/error/You_are_logging_in_too_fast._Please_wait_5_second_before_you_try_again.')
+        end
+    end
+end
+
 #Display Landingpage
 get('/') do 
 slim(:home)
@@ -152,9 +190,12 @@ add_nft(name, url, token, user_id, description)
 redirect('/inventory')
 end
 
+
+
 # Se model.rb
 
 post('/login') do
+session[:logging] = Time.now
 user = params[:user]
 pwd = params[:pwd]
 login(user, pwd)
