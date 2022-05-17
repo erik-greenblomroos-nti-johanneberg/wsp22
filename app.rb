@@ -126,16 +126,22 @@ end
 # Kollar ifall den ska vara på auktion sidan eller inte
 #
 get('/inventory/sell/:nft_id') do
-    id = session[:user_id]
+    #Lägg till så att den kollar ifall användaren äger den
+    id = session[:user_id].to_i
     nft_id = params[:nft_id].to_i
-    if is_in_auction(nft_id) == false 
+    if is_in_auction(nft_id)
+        redirect('/error/NFT_is_already_in_auction')
+    end
+    if is_active(nft_id)
+        redirect('/error/This_NFT_is_already_in_auction')
+    end
+    if id != owner_id(nft_id)
+        redirect('/error/You_do_not_own_this_property')
+    end
+
     result = get_nft(nft_id)
     user_result = get_user(id)
     slim(:"inventory/sell",locals:{nft:result, user_result:user_result})
-    else
-        redirect('/error/NFT_is_already_in_auction')
-    #ERROR
-    end
 end
 
 get('/error/:error_msg') do
@@ -148,10 +154,29 @@ end
 # Params[String] to integer, NFT_Id
 # Params[Integer], Bidamount
 post('/auction/:nft_id') do
-    id = session[:user_id]
+    user_id = session[:user_id]
     nft_id = params[:nft_id].to_i
     bid_amount = params[:bid]
-    user_bid(id, nft_id, bid_amount)
+    if is_in_auction(nft_id) 
+        redirect('/error/NFT_isnt_in_an_auction')
+    end
+    if bid_amount <= balance(user_id)
+        redirect('/error/Your_balance_is_too_low')
+    end
+    if user_owns_nft(user_id, nft_id)
+        redirect('/error/You_cant_bid_at_your_own_NFT')
+    end
+    if bid_amount > min_bid(nft_id)
+        redirect('/error/Your_bid_was_too_low')
+    end
+    if is_a_lead 
+       current_lead = id_of_lead(nft_id)
+       if current_lead == user_id
+        redirect('/error/You_cant_bid_if_you_already_have_the_highest_bid')
+       end
+    end
+
+    user_bid(user_id, nft_id, bid_amount)
     redirect('/auction')
 end
 
