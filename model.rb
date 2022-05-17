@@ -126,7 +126,7 @@ module Model
     end
     def owner_id(nft_id)
         db = connect_db
-        owner_id = db.execute("SELECT Status,Id FROM NFT WHERE Id = ?", nft_id).first["OwnerId"]
+        owner_id = db.execute("SELECT OwnerId FROM NFT WHERE Id = ?", nft_id).first["OwnerId"]
         return owner_id
     end
 
@@ -241,11 +241,11 @@ module Model
     #deavitvate
     db.execute("UPDATE NFT SET Status = ? WHERE Id = ?","inactive", nft_id )
     current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
-    if current_lead != nil
-        current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
-        min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
-        give_money(current_lead, min_bid)
-    end
+        if current_lead != nil
+            current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
+            min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
+            give_money(current_lead, min_bid)
+        end
     delete_relation(nft_id)
     end
 
@@ -279,4 +279,11 @@ module Model
         result = db.execute("SELECT * FROM NFT WHERE Status = ?", "active")
         return result
     end
+    def owner_name(nft_id)
+        db = connect_db
+        owner_id = owner_id(nft_id)
+        owner_name = db.execute("SELECT Name FROM User WHERE Id = ?", owner_id).first["Name"]
+        return owner_name
+    end
+
 end

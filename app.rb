@@ -97,7 +97,8 @@ get('/auction/bid/:nft_id') do
     db = connect_db
     result = get_nft(nft_id)
     user_result = get_user(id)
-    slim(:"auction/bid", locals:{nft:result, user_result:user_result})
+    owner = owner_name(nft_id)
+    slim(:"auction/bid", locals:{nft:result, user_result:user_result, owner:owner})
 end
 
 # Display Inventorypage
@@ -223,21 +224,27 @@ post('/login') do
 session[:logging] = Time.now
 user = params[:user]
 pwd = params[:pwd]
-if check_user(user).empty?
-    redirect('/error/Wrong_password_or_username')   
-end
-if pwd_match(user, pwd) == false
-    redirect('/error/Wrong_password_or_username')
-end
-if login(user, pwd)
-    user_id = get_userid(user)
-    session[:user_id] = user_id
-    role = get_role(user)
-    session[:role] = role
-    redirect('/auction')
-else
-    redirect('/error/Wrong_password_or_username')
-end
+    if user == ""
+        redirect('/error/Username_is_empty')   
+    end
+    if pwd == ""
+        redirect('/error/Password_is_empty')   
+    end
+    if check_user(user).empty?
+        redirect('/error/Wrong_password_or_username')   
+    end
+    if pwd_match(user, pwd) == false
+        redirect('/error/Wrong_password_or_username')
+    end
+    if login(user, pwd)
+        user_id = get_userid(user)
+        session[:user_id] = user_id
+        role = get_role(user)
+        session[:role] = role
+        redirect('/auction')
+    else
+        redirect('/error/Wrong_password_or_username')
+    end
 
 end
 
@@ -248,9 +255,19 @@ end
 # Params[String], mail
 post('/register') do
 user = params["user"]
+if user.length < 3
+    redirect('/error/Name_must_be_atleast_3_characters_long')
+end
 pwd = params["pwd"]
 conf_pwd = params["conf_pwd"]
 mail = params["mail"]
+
+if mail == ""
+    redirect('/error/Mail_is_empty')
+end
+if pwd.length < 8
+    redirect('/error/Password_must_be_atleast_8_characters_long')
+end
 if user_exists(user)
     redirect('/error/There_is_already_a_user_named_that')
 end
