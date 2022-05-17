@@ -154,23 +154,24 @@ end
 # Session[integer] Id
 # Params[String] to integer, NFT_Id
 # Params[Integer], Bidamount
+# If-sats om 
 post('/auction/:nft_id') do
     user_id = session[:user_id]
     nft_id = params[:nft_id].to_i
-    bid_amount = params[:bid]
-    if is_in_auction(nft_id) 
+    bid_amount = params[:bid].to_i
+    if is_in_auction(nft_id) == false
         redirect('/error/NFT_isnt_in_an_auction')
     end
-    if bid_amount <= balance(user_id)
+    if bid_amount > balance(user_id)
         redirect('/error/Your_balance_is_too_low')
     end
     if user_owns_nft(user_id, nft_id)
         redirect('/error/You_cant_bid_at_your_own_NFT')
     end
-    if bid_amount > min_bid(nft_id)
+    if bid_amount <= min_bid(nft_id)
         redirect('/error/Your_bid_was_too_low')
     end
-    if is_a_lead 
+    if has_lead(nft_id)
        current_lead = id_of_lead(nft_id)
        if current_lead == user_id
         redirect('/error/You_cant_bid_if_you_already_have_the_highest_bid')

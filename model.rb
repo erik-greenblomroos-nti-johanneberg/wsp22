@@ -55,7 +55,7 @@ module Model
         return min_bid
     end
 
-    def is_a_lead(nft_id)
+    def has_lead(nft_id)
         db = connect_db
         lead_id = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
         if lead_id == nil
@@ -80,49 +80,25 @@ module Model
     #
     def user_bid(user_id, nft_id, bid_amount)
         db = connect_db
-        if is_in_auction(nft_id) == true
-        bid_amount = bid_amount.to_i
-        min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
         current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
-        owner = db.execute("SELECT OwnerId FROM NFT WHERE Id = ?", nft_id).first["OwnerId"]
-        #Kan lägga till så att owner och min_bid hämtas samtidigt
-        balance = db.execute("SELECT Balance FROM User WHERE Id = ?", user_id.to_i).first["Balance"]
-            if bid_amount <= balance
-                if bid_amount > min_bid 
-                    if user_id.to_i != owner
-                        if current_lead == nil
-                            current_time = Time.now.to_s
-                            db.execute("INSERT INTO Bid (Bidamount, Bidtime, Userid, NFTid) VALUES(?,?,?,?)",bid_amount, current_time,user_id,nft_id)
-                            db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?",bid_amount, nft_id)
-                            take_money(user_id, bid_amount)
-                        else
-                            current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
-                            if user_id.to_i != current_lead
-                                current_time = Time.now.to_s
-                                give_money(current_lead, min_bid)
-                                db.execute("INSERT INTO Bid (Bidamount, Bidtime, Userid, NFTid) VALUES(?,?,?,?)",bid_amount, current_time,user_id,nft_id)
-                                db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?",bid_amount, nft_id)
-                                take_money(user_id, bid_amount)
-                            else
-                                #ERROR
-                            end
-                        end
-                        new_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
-                        latest_bid = db.execute("SELECT Id FROM Bid WHERE UserId = ?", new_lead).last["Id"]
-                        db.execute("INSERT INTO user_bid_relation (UserId, BidId) VALUES(?,?)",new_lead, latest_bid)
-                    else
-                        # ERROR -
-                    end
-                else
-                    # ERROR
-                end
-            else
-                #ERROR
+        if current_lead == nil
+            current_time = Time.now.to_s
+            db.execute("INSERT INTO Bid (Bidamount, Bidtime, Userid, NFTid) VALUES(?,?,?,?)",bid_amount, current_time,user_id,nft_id)
+            db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?",bid_amount, nft_id)
+            take_money(user_id, bid_amount)
+        else
+            current_lead = current_lead["Userid"]
+            if user_id.to_i != current_lead
+                current_time = Time.now.to_s
+                give_money(current_lead, min_bid)
+                db.execute("INSERT INTO Bid (Bidamount, Bidtime, Userid, NFTid) VALUES(?,?,?,?)",bid_amount, current_time,user_id,nft_id)
+                db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?",bid_amount, nft_id)
+                take_money(user_id, bid_amount)
             end
-        else 
-        #ERROR
         end
-
+        new_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
+        latest_bid = db.execute("SELECT Id FROM Bid WHERE UserId = ?", new_lead).last["Id"]
+        db.execute("INSERT INTO user_bid_relation (UserId, BidId) VALUES(?,?)",new_lead, latest_bid)
     end
     def owner_id(nft_id)
         db = connect_db
@@ -217,8 +193,6 @@ module Model
     pwd_digest = result.first["Password"]
         if BCrypt::Password.new(pwd_digest) == pwd
             return true
-        else
-            #ERROR
         end
     end
 
