@@ -28,26 +28,3 @@ div.auction_table
                          - if session[:role] == 1
                                 form action="/auction/#{nft['Id']}/delete" method="post"
                                     input type="submit" value="Remove"   
-
-/  .auction_container
-/     .nft_container
-/     .auction_interaction
-/         .small_display
-/             p $400
-/         .small_display
-/             p By: Owenter
-/         .small_display
-/             p 2h left
-/         .small_display
-/             .tiny_display 
-/                 p Bid 
-/             .tiny_display  
-/                 p Hist  
-
-/ ol
-/   - preview.each do |NFT|
-/     li 
-/       a href="auction/#{auction['NFTid']}" #{NFT["Title"]}
-/       a href="auction/#{auction['NFTid']}/bid" Bid 
-/       a href="auction/#{auction['NFTid']}/hitory" History 
-      
