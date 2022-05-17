@@ -6,16 +6,7 @@ module Model
         db.results_as_hash = true
         return db
     end
-    # Kollar ifall en nft redan finns i auktionen, returnerar false eller true
-    def is_in_auction(nft_id)
-        db = connect_db
-        status = db.execute("SELECT Status FROM NFT WHERE Id = ?", nft_id).first["Status"]      
-            if status == "inactive"
-                return false
-            else
-                return true
-            end
-        end
+
 
     # Ändrar User's Balance och genom att subtrahera deras bidamount
     def take_money(user_id, bidamount)
@@ -81,6 +72,7 @@ module Model
     def user_bid(user_id, nft_id, bid_amount)
         db = connect_db
         current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
+        min_bid = min_bid(nft_id)
         if current_lead == nil
             current_time = Time.now.to_s
             db.execute("INSERT INTO Bid (Bidamount, Bidtime, Userid, NFTid) VALUES(?,?,?,?)",bid_amount, current_time,user_id,nft_id)
@@ -106,6 +98,7 @@ module Model
         return owner_id
     end
 
+    # Kollar ifall en nft är tilldelad active i attributet Status, returnerar false eller true
     def is_active(nft_id)
         db = connect_db
         status = db.execute("SELECT Status FROM NFT WHERE Id = ?", nft_id).first["Status"]
@@ -227,7 +220,6 @@ module Model
         db = connect_db
         deactivate_nft(nft_id)
         current_value = db.execute("SELECT Currentvalue FROM NFT WHERE Id = ?", nft_id).first["Currentvalue"]
-        p current_value
         db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?", current_value, nft_id)
 
     end
@@ -259,5 +251,33 @@ module Model
         owner_name = db.execute("SELECT Name FROM User WHERE Id = ?", owner_id).first["Name"]
         return owner_name
     end
+    def token_exists(token)
+        db = connect_db
+        result = db.execute("SELECT * FROM NFT WHERE Token = ?", token).last
+        if result != nil
+            return true
+        else
+            return false
+        end
+    end
+    def  url_exists(url)
+        db = connect_db
+        result = db.execute("SELECT * FROM NFT WHERE URL = ?", url).last
+        if result != nil
+            return true
+        else
+            return false
+        end
+    end
+    def nft_name_exists(name)
+        db = connect_db
+        result = db.execute("SELECT * FROM NFT WHERE Name = ?", name).last
+        if result != nil
+            return true
+        else
+            return false
+        end
+    end
 
 end
+

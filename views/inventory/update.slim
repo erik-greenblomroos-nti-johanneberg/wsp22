@@ -9,7 +9,7 @@ div.auction_banner
                 .bid_interaction
                     .bid_name
                         p #{nft["Name"]} 
-                    form action="/inventory/#{user_result['Id']}/#{nft['Id']}/sell" method="POST"
+                    form action="/inventory/#{nft['Id']}/update" method="POST"
                         input type="number" name="startprice" placeholder="Enter Startprice"
                         Label for="deadline" 
                             p Choose days for auction

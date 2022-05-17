@@ -22,7 +22,7 @@ before('/auction') do
 end
 
 #Kollar ifall användaren är inloggad
-before('/inventory/sell/:nft_id') do
+before('/inventory/:nft_id/update') do
     if session[:user_id] == nil
         redirect('/')
     end
@@ -126,13 +126,10 @@ end
 # Display nft utifrån nft_id
 # Kollar ifall den ska vara på auktion sidan eller inte
 #
-get('/inventory/sell/:nft_id') do
+get('/inventory/:nft_id/update') do
     #Lägg till så att den kollar ifall användaren äger den
     id = session[:user_id].to_i
     nft_id = params[:nft_id].to_i
-    if is_in_auction(nft_id)
-        redirect('/error/NFT_is_already_in_auction')
-    end
     if is_active(nft_id)
         redirect('/error/This_NFT_is_already_in_auction')
     end
@@ -142,7 +139,7 @@ get('/inventory/sell/:nft_id') do
 
     result = get_nft(nft_id)
     user_result = get_user(id)
-    slim(:"inventory/sell",locals:{nft:result, user_result:user_result})
+    slim(:"inventory/update",locals:{nft:result, user_result:user_result})
 end
 
 get('/error/:error_msg') do
@@ -159,7 +156,7 @@ post('/auction/:nft_id') do
     user_id = session[:user_id]
     nft_id = params[:nft_id].to_i
     bid_amount = params[:bid].to_i
-    if is_in_auction(nft_id) == false
+    if is_active(nft_id) == false
         redirect('/error/NFT_isnt_in_an_auction')
     end
     if bid_amount > balance(user_id)
@@ -213,6 +210,19 @@ name = params[:name]
 url = params[:URL]
 token = params[:token]
 description = params[:description]
+
+if name.length < 3
+    redirect('/error/The_name_of_the_NFT_must_be_atleast_3_characters_long')
+end
+if nft_name_exists(name)
+    redirect('/error/That_NFT_name_already_exists')
+end
+if token_exists(token)
+    redirect('/error/That_token_already_exists_..._How?')
+end
+if url_exists(url)
+    redirect('/error/That_picture_route_already_exists')
+end
 add_nft(name, url, token, user_id, description)
 redirect('/inventory')
 end
