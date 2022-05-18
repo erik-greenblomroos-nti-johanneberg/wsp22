@@ -146,9 +146,6 @@ module Model
         db.execute("UPDATE NFT SET Startprice = ?, Increment = ?, Status = ?, Deadline = ? WHERE Id =?", startprice.to_i, increment, "active", deadline, nft_id)   
     end
 
-    # Använder hjälpfunktionen connect_db för att koppla till databasen
-    # Skapar en NFT i db med tillgivna variabler
-
     # Lägger till NFT
     # @param [String] name namn på NFT
     # @param [String] url routen till bilden
