@@ -8,47 +8,19 @@ enable :sessions
 
 include Model
 
-#Kollar ifall användaren är inloggad
-before('/inventory') do
-    if session[:user_id] == nil
+#kollar ifall användaren är inloggad, om inte, redirect till '/'
+before do
+@protected_routes = ["/inventory", "/auction", "/inventory/:nft_id/update","/inventory/new","/inventory/:nft_id/delete","/auction/bid/:nft_id",""]
+    if @protected_routes.include?(request.path_info)
+        if session[:user_id] == nil
         redirect('/')
-    end
-end
-#Kollar ifall användaren är inloggad
-before('/auction') do
-    if session[:user_id] == nil
-        redirect('/')
-    end
-end
-
-#Kollar ifall användaren är inloggad
-before('/inventory/:nft_id/update') do
-    if session[:user_id] == nil
-        redirect('/')
+        end
+    else
+        #Do nothing
     end
 end
 
-#Kollar ifall användaren är inloggad
-before('/inventory/new') do
-    if session[:user_id] == nil
-        redirect('/')
-    end
-end
-
-#Kollar ifall användaren är inloggad
-before('/inventory/:nft_id/delete') do
-    if session[:user_id] == nil
-        redirect('/')
-    end
-end
-
-#Kollar ifall användaren är inloggad
-before('/auction/bid/:nft_id') do
-    if session[:user_id] == nil
-        redirect('/')
-    end
-end
-# kollar ifall personen är inloggad
+# kollar ifall personen är inloggad och ifall det har gått 5 sekunder sen senaste inlogg försök
 before ('/login') do
     if session[:logging] != nil
         if Time.now - session[:logging] < 5
@@ -74,7 +46,6 @@ end
 # @see Model#get_active_nft
 # @see Model#get_user
 get('/auction') do
-    db = connect_db
     id = session[:user_id]
     result = get_active_nft()
     user_result = get_user(id)
@@ -82,7 +53,6 @@ get('/auction') do
 end
 
 # Display bid baserat på nft_id
-# Session[integer] Id
 # @param [String] :id, Id av NFT 
 # @see Model#get_nft
 # @see Model#get_user
@@ -273,25 +243,25 @@ end
 # @see Model#register
 post('/register') do
 user = params["user"]
-if user.length < 3
-    redirect('/error/Name_must_be_atleast_3_characters_long')
-end
-pwd = params["pwd"]
-conf_pwd = params["conf_pwd"]
-mail = params["mail"]
+    if user.length < 3
+        redirect('/error/Name_must_be_atleast_3_characters_long')
+    end
+    pwd = params["pwd"]
+    conf_pwd = params["conf_pwd"]
+    mail = params["mail"]
 
-if mail == ""
-    redirect('/error/Mail_is_empty')
-end
-if pwd.length < 8
-    redirect('/error/Password_must_be_atleast_8_characters_long')
-end
-if user_exists(user)
-    redirect('/error/There_is_already_a_user_named_that')
-end
-if pwd != conf_pwd
-    redirect('/error/The_passwords_do_not_match')
-end
+    if mail == ""
+        redirect('/error/Mail_is_empty')
+    end
+    if pwd.length < 8
+        redirect('/error/Password_must_be_atleast_8_characters_long')
+    end
+    if user_exists(user)
+        redirect('/error/There_is_already_a_user_named_that')
+    end
+    if pwd != conf_pwd
+        redirect('/error/The_passwords_do_not_match')
+    end
 register(user,pwd,conf_pwd,mail)
 redirect('/login')
 end

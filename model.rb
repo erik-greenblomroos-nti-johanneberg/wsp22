@@ -262,15 +262,15 @@ module Model
     # Ändrar attributen Status i NFT till "inactive"
     # @param [Integer] nft_id Id på NFT
     def deactivate_nft(nft_id)
-    db = connect_db
-    db.execute("UPDATE NFT SET Status = ? WHERE Id = ?","inactive", nft_id )
-    current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
-        if current_lead != nil
-            current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
-            min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
-            give_money(current_lead, min_bid)
-        end
-    delete_relation(nft_id)
+        db = connect_db
+        db.execute("UPDATE NFT SET Status = ? WHERE Id = ?","inactive", nft_id )
+        current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last
+            if current_lead != nil
+                current_lead = db.execute("SELECT Userid FROM Bid WHERE NFTid = ?", nft_id).last["Userid"]
+                min_bid = db.execute("SELECT Startprice FROM NFT WHERE Id = ?", nft_id).first["Startprice"]
+                give_money(current_lead, min_bid)
+            end
+        delete_relation(nft_id)
     end
 
     # Uppdaterar attributen Startprice i NFT till Currentvalue
@@ -280,7 +280,6 @@ module Model
         deactivate_nft(nft_id)
         current_value = db.execute("SELECT Currentvalue FROM NFT WHERE Id = ?", nft_id).first["Currentvalue"]
         db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?", current_value, nft_id)
-
     end
    
     # Hämtar all data från NFT
