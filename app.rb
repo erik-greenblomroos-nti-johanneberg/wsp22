@@ -48,9 +48,8 @@ before('/auction/bid/:nft_id') do
         redirect('/')
     end
 end
-
+# kollar ifall personen är inloggad
 before ('/login') do
-    # username = params[:username]
     if session[:logging] != nil
         if Time.now - session[:logging] < 5
             redirect('/error/You_are_logging_in_too_fast._Please_wait_5_second_before_you_try_again.')
@@ -154,7 +153,7 @@ end
 # @see Model#id_of_lead
 # @see Model#user_bid
 post('/auction/:nft_id') do
-    user_id = session[:user_id]
+    user_id = session[:user_id].to_i
     nft_id = params[:nft_id].to_i
     bid_amount = params[:bid].to_i
     if is_active(nft_id) == false

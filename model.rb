@@ -12,18 +12,19 @@ module Model
     # @param [Integer] bid_amount storhet på bud
     def take_money(user_id, bidamount)
         db = connect_db
-        balance = db.execute("SELECT Balance FROM User WHERE Id = ?", user_id.to_i).first["Balance"]
+        balance = db.execute("SELECT Balance FROM User WHERE Id = ?", user_id).first["Balance"]
         new_balance = balance.to_i - bidamount.to_i
-        db.execute("UPDATE User SET Balance = ? WHERE Id = ?", new_balance, user_id.to_i)
+        db.execute("UPDATE User SET Balance = ? WHERE Id = ?", new_balance, user_id)
     end
     # Ändrar User's Balance
     # @param [Integer] user_id användarens id
     # @param [Integer] bid_amount storhet på bud
     def give_money(user_id, bidamount)
         db = connect_db
-        balance = db.execute("SELECT Balance FROM User WHERE Id = ?", user_id.to_i).first["Balance"]
+        p user_id
+        balance = balance(user_id)
         new_balance = balance.to_i + bidamount.to_i
-        db.execute("UPDATE User SET Balance = ? WHERE Id = ?", new_balance, user_id.to_i)
+        db.execute("UPDATE User SET Balance = ? WHERE Id = ?", new_balance, user_id)
     end
 
     # Hämtar User's Balance
@@ -97,6 +98,7 @@ module Model
             db.execute("UPDATE NFT SET Startprice = ? WHERE Id = ?",bid_amount, nft_id)
             take_money(user_id, bid_amount)
         else
+                current_lead = current_lead["Userid"]
                 current_time = Time.now.to_s
                 give_money(current_lead, min_bid)
                 db.execute("INSERT INTO Bid (Bidamount, Bidtime, Userid, NFTid) VALUES(?,?,?,?)",bid_amount, current_time,user_id,nft_id)
